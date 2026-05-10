@@ -1,0 +1,109 @@
+:root {
+  --ink: #1a1814;
+  --ink-soft: #4a4540;
+  --ink-muted: #8a8078;
+  --paper: #f5f0e8;
+  --paper-warm: #ede8dc;
+  --paper-cool: #faf8f4;
+  --accent: #c8451a;
+  --accent-soft: #e8673d;
+  --accent-pale: #f5ddd5;
+  --teal: #1a7a6e;
+  --teal-pale: #d0ebe8;
+  --gold: #c49a2a;
+  --gold-pale: #f5ecd0;
+
+  --font-display: 'DM Serif Display', serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 3px rgba(26,24,20,0.08);
+  --shadow-md: 0 4px 16px rgba(26,24,20,0.10);
+  --shadow-lg: 0 8px 40px rgba(26,24,20,0.13);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: var(--font-sans);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper-warm);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-muted);
+  border-radius: 3px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.tag--difficulty-Difficult   { background: #fde8e8; color: #c0392b; }
+.tag--difficulty-Challenging { background: #fdf0e0; color: #c07020; }
+.tag--difficulty-Normal      { background: #e8f4f0; color: #1a7a6e; }
+.tag--difficulty-Easy        { background: #e8f0fd; color: #2060c0; }
+
+.tag--freq-VeryCommon   { background: var(--teal-pale);  color: var(--teal); }
+.tag--freq-Common       { background: var(--gold-pale);  color: var(--gold); }
+.tag--freq-Occasionally { background: var(--paper-warm); color: var(--ink-soft); }
+.tag--freq-Rare         { background: #ede8f5;           color: #6040a0; }
+
+.tag--usage { background: var(--paper-warm); color: var(--ink-soft); }
+.tag--pos   { background: var(--accent-pale); color: var(--accent); }
+.tag--casual { background: var(--paper-warm); color: var(--ink-soft); }
+.tag--type   { background: #e8eefd; color: #2050c0; }
+.tag--emotion { background: #f0e8fd; color: #6030a0; }

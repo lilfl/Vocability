@@ -1,0 +1,293 @@
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.progressBar {
+  height: 3px;
+  background: var(--paper-warm);
+  flex-shrink: 0;
+}
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s var(--ease-out);
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 48px;
+  gap: 24px;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.metaLeft { display: flex; gap: 6px; flex-wrap: wrap; }
+.counter { font-family: var(--font-mono); font-size: 13px; color: var(--ink-muted); }
+
+/* Flip card */
+.card {
+  width: 100%;
+  min-height: 320px;
+  perspective: 1200px;
+  cursor: pointer;
+}
+.cardInner {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card.flipped .cardInner {
+  transform: rotateY(180deg);
+}
+
+.cardFront, .cardBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardFront {
+  background: var(--paper-cool);
+  border: 1px solid var(--paper-warm);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.tapHint {
+  position: absolute;
+  top: 16px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+
+.word {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 6vw, 52px);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.phonetic {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--ink-muted);
+}
+.coreImage {
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-soft);
+  max-width: 400px;
+  margin-top: 4px;
+}
+
+/* Back */
+.cardBack {
+  background: var(--paper);
+  border: 1px solid var(--paper-warm);
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  gap: 14px;
+}
+.wordBack {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--ink);
+}
+.meaning {
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.6;
+  padding: 14px;
+  background: var(--paper-cool);
+  border-radius: var(--radius-md);
+}
+.example, .paraphrase {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.exampleLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.example p {
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-style: italic;
+  line-height: 1.5;
+}
+.paraphrase p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.memo {
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--gold-pale);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+}
+.tagRow { display: flex; flex-wrap: wrap; gap: 5px; }
+.links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.audioLink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--teal);
+  font-weight: 500;
+}
+.audioLink:hover { text-decoration: underline; }
+.similar { font-size: 12px; color: var(--ink-muted); }
+
+/* Controls */
+.flipBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 28px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.flipBtn:hover { background: var(--ink-soft); }
+
+.grades {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.gradeHint {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.gradeButtons {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.gradeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  background: var(--grade-bg);
+  color: var(--grade-color);
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.gradeBtn:hover {
+  border-color: var(--grade-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.gradeBtn:active { transform: translateY(0); }
+.gradeBtnLabel { font-size: 12px; font-weight: 600; }
+.gradeBtnQ { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+
+/* Center states */
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.spin { animation: spin 1s linear infinite; color: var(--ink-muted); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.errorText { color: var(--accent); max-width: 400px; text-align: center; }
+.retryBtn {
+  padding: 8px 20px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+/* Done screen */
+.donePage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+.doneCard {
+  background: var(--paper-cool);
+  border: 1px solid var(--paper-warm);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.doneEmoji { font-size: 48px; }
+.doneTitle { font-family: var(--font-display); font-size: 32px; }
+.doneSub { font-size: 14px; color: var(--ink-muted); }
+.doneStats { display: flex; gap: 24px; margin: 8px 0; }
+.statBadge { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.statValue { font-family: var(--font-display); font-size: 32px; color: var(--ink); }
+.statLabel { font-size: 11px; color: var(--ink-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.restartBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+}
+.restartBtn:hover { background: var(--ink-soft); }
