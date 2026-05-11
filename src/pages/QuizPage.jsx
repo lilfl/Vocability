@@ -56,7 +56,7 @@ export default function QuizPage() {
         cursor = data.has_more ? data.next_cursor : undefined
       } while (cursor)
 
-      const due = results.filter(isDue)
+      const due = results.filter(c => isDue(c) && c.Vocabulary)
       // Sort: new cards first (repetition=0), then by dueDate
       due.sort((a, b) => {
         if (a.sm2_repetition === 0 && b.sm2_repetition !== 0) return -1
