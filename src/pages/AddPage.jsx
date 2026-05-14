@@ -210,9 +210,18 @@ export default function AddPage() {
     return text.split(/[\n,]+/).map(w => w.trim()).filter(Boolean)
   }
 
+  const hasNonEnglish = (word) => /[　-鿿豈-﫿＀-￯]/.test(word)
+
   const handleGenerate = async () => {
     const wordList = parseWords(words)
     if (!wordList.length) return
+
+    const invalidWords = wordList.filter(hasNonEnglish)
+    if (invalidWords.length > 0) {
+      setError(`日本語・記号など英語以外の文字が含まれています: ${invalidWords.join(', ')}`)
+      setStatus('error')
+      return
+    }
 
     if (!settings.openaiKey) {
       setError('OpenAI API Key is not set. Go to Settings.')
