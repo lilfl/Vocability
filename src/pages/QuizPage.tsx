@@ -2,10 +2,19 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSettings } from '../lib/SettingsContext'
 import { queryDatabase, updatePage, parseVocabPage, buildNotionProperties } from '../lib/notion'
 import { sm2, isDue } from '../lib/sm2'
-import { RotateCcw, Volume2, ExternalLink, ChevronRight, Loader, AlertCircle } from 'lucide-react'
+import type { Vocab } from '../types'
+import { RotateCcw, Volume2, ChevronRight, Loader, AlertCircle } from 'lucide-react'
 import styles from './QuizPage.module.css'
 
-const QUALITY_LABELS = [
+interface QualityLabel {
+  q: number
+  label: string
+  color: string
+  bg: string
+  desc: string
+}
+
+const QUALITY_LABELS: QualityLabel[] = [
   { q: 0, label: 'Blackout', color: '#c0392b', bg: '#fde8e8', desc: 'Complete forget' },
   { q: 1, label: 'Wrong',    color: '#c07020', bg: '#fdf0e0', desc: 'Wrong but recalled' },
   { q: 2, label: 'Hard',     color: '#907010', bg: '#fdf8e0', desc: 'Wrong, easy after' },
@@ -14,7 +23,7 @@ const QUALITY_LABELS = [
   { q: 5, label: 'Perfect',  color: '#401080', bg: '#eee0fc', desc: 'Perfect!' },
 ]
 
-function StatBadge({ label, value }) {
+function StatBadge({ label, value }: { label: string; value: number }) {
   return (
     <div className={styles.statBadge}>
       <span className={styles.statValue}>{value}</span>
@@ -25,8 +34,8 @@ function StatBadge({ label, value }) {
 
 export default function QuizPage() {
   const { settings } = useSettings()
-  const [cards, setCards] = useState([])
-  const [queue, setQueue] = useState([])
+  const [cards, setCards] = useState<Vocab[]>([])
+  const [queue, setQueue] = useState<Vocab[]>([])
   const [currentIdx, setCurrentIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -42,8 +51,8 @@ export default function QuizPage() {
     setLoading(true)
     setError('')
     try {
-      const results = []
-      let cursor = undefined
+      const results: Vocab[] = []
+      let cursor: string | undefined
       do {
         const data = await queryDatabase(
           settings.notionToken,
@@ -53,11 +62,10 @@ export default function QuizPage() {
           cursor
         )
         results.push(...data.results.map(parseVocabPage))
-        cursor = data.has_more ? data.next_cursor : undefined
+        cursor = data.has_more ? (data.next_cursor ?? undefined) : undefined
       } while (cursor)
 
       const due = results.filter(c => isDue(c) && c.Vocabulary)
-      // Sort: new cards first (repetition=0), then by dueDate
       due.sort((a, b) => {
         if (a.sm2_repetition === 0 && b.sm2_repetition !== 0) return -1
         if (b.sm2_repetition === 0 && a.sm2_repetition !== 0) return 1
@@ -70,7 +78,7 @@ export default function QuizPage() {
       setFlipped(false)
       setDone(due.length === 0)
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }
@@ -80,14 +88,13 @@ export default function QuizPage() {
 
   const current = queue[currentIdx]
 
-  const handleGrade = async (quality) => {
+  const handleGrade = async (quality: number) => {
     if (!current) return
     const updated = sm2(current, quality)
-    const newCard = { ...current, ...updated }
+    const newCard: Vocab = { ...current, ...updated }
 
-    // Update Notion
     try {
-      await updatePage(settings.notionToken, current.id, buildNotionProperties(newCard))
+      await updatePage(settings.notionToken!, current.id, buildNotionProperties(newCard))
     } catch (err) {
       console.error('Failed to update Notion:', err)
     }
@@ -97,7 +104,6 @@ export default function QuizPage() {
       again: quality < 3 ? s.again + 1 : s.again,
     }))
 
-    // If failed (quality < 3), re-queue at the end
     if (quality < 3) {
       setQueue(q => {
         const next = [...q]
@@ -105,7 +111,6 @@ export default function QuizPage() {
         next.push(newCard)
         return next
       })
-      // stay at same index (next card slides in)
       setFlipped(false)
     } else {
       const nextIdx = currentIdx + 1
@@ -162,7 +167,6 @@ export default function QuizPage() {
 
   return (
     <div className={styles.page}>
-      {/* Progress */}
       <div className={styles.progressBar}>
         <div className={styles.progressFill} style={{ width: `${progress}%` }} />
       </div>
@@ -177,49 +181,40 @@ export default function QuizPage() {
           <span className={styles.counter}>{currentIdx + 1} / {totalDue}</span>
         </div>
 
-        {/* Card */}
         <div className={`${styles.card} ${flipped ? styles.flipped : ''}`} onClick={() => !flipped && setFlipped(true)}>
           <div className={styles.cardInner}>
-            {/* Front */}
             <div className={styles.cardFront}>
               <p className={styles.tapHint}>tap to reveal</p>
               <h2 className={styles.word}>{current.Vocabulary}</h2>
               {current.IPA_US && <p className={styles.phonetic}>{current.IPA_US}</p>}
-              {current.CoreImage && (
-                <p className={styles.coreImage}>"{current.CoreImage}"</p>
-              )}
+              {current.CoreImage && <p className={styles.coreImage}>"{current.CoreImage}"</p>}
             </div>
 
-            {/* Back */}
             <div className={styles.cardBack}>
               <h2 className={styles.wordBack}>{current.Vocabulary}</h2>
-              {current.IPA_US && <p className={styles.phonetic}>{current.IPA_US}{current.IPA_UK ? ` · ${current.IPA_UK}` : ''}</p>}
-
+              {current.IPA_US && (
+                <p className={styles.phonetic}>
+                  {current.IPA_US}{current.IPA_UK ? ` · ${current.IPA_UK}` : ''}
+                </p>
+              )}
               <div className={styles.meaning}>{current.JapaneseMeaning || current.Meaning}</div>
-
               {current.Example && (
                 <div className={styles.example}>
                   <span className={styles.exampleLabel}>Example</span>
                   <p>{current.Example}</p>
                 </div>
               )}
-
               {current.Paraphrases && (
                 <div className={styles.paraphrase}>
                   <span className={styles.exampleLabel}>Paraphrase</span>
                   <p>{current.Paraphrases}</p>
                 </div>
               )}
-
-              {current.Memo && (
-                <div className={styles.memo}>💬 {current.Memo}</div>
-              )}
-
+              {current.Memo && <div className={styles.memo}>💬 {current.Memo}</div>}
               <div className={styles.tagRow}>
-                {(current.Usage || []).map(t => <span key={t} className="tag tag--usage">{t}</span>)}
-                {(current.EmotionTags || []).map(t => <span key={t} className="tag tag--emotion">{t}</span>)}
+                {current.Usage.map(t => <span key={t} className="tag tag--usage">{t}</span>)}
+                {current.EmotionTags.map(t => <span key={t} className="tag tag--emotion">{t}</span>)}
               </div>
-
               <div className={styles.links}>
                 {current.YouGlish && (
                   <a href={current.YouGlish} target="_blank" rel="noopener noreferrer" className={styles.audioLink}
@@ -237,7 +232,6 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Grade buttons */}
         {flipped && (
           <div className={styles.grades}>
             <p className={styles.gradeHint}>How well did you remember?</p>
@@ -246,7 +240,7 @@ export default function QuizPage() {
                 <button
                   key={q}
                   className={styles.gradeBtn}
-                  style={{ '--grade-color': color, '--grade-bg': bg }}
+                  style={{ '--grade-color': color, '--grade-bg': bg } as React.CSSProperties}
                   onClick={() => handleGrade(q)}
                   title={desc}
                 >
