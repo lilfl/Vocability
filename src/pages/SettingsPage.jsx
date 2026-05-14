@@ -72,25 +72,25 @@ function PersonGroup({ group, people, onChange }) {
           </div>
           <div className={styles.personCardGrid}>
             <div className={styles.field}>
-              <label className={styles.label}>Nickname</label>
+              <label className={styles.label}>ニックネーム</label>
               <input className={styles.input} value={person.Nickname} onChange={e => update(i, 'Nickname', e.target.value)} />
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>Gender</label>
+              <label className={styles.label}>性別</label>
               <select className={styles.select} value={person.Gender} onChange={e => update(i, 'Gender', e.target.value)}>
                 {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o || '—'}</option>)}
               </select>
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>Relationship</label>
+              <label className={styles.label}>関係</label>
               <input className={styles.input} placeholder={relHint} value={person.Relationship} onChange={e => update(i, 'Relationship', e.target.value)} />
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>Occupation</label>
+              <label className={styles.label}>職業</label>
               <input className={styles.input} value={person.Occupation} onChange={e => update(i, 'Occupation', e.target.value)} />
             </div>
             <div className={`${styles.field} ${styles.fullWidth}`}>
-              <label className={styles.label}>Hobbies</label>
+              <label className={styles.label}>趣味</label>
               <input className={styles.input} value={person.Hobbies} onChange={e => update(i, 'Hobbies', e.target.value)} />
             </div>
           </div>
@@ -192,41 +192,41 @@ export default function SettingsPage() {
             <span className={styles.personaSubTitle}>本人のプロフィール</span>
             <div className={styles.profileGrid}>
               <div className={styles.field}>
-                <label className={styles.label}>Nickname</label>
+                <label className={styles.label}>ニックネーム</label>
                 <input className={styles.input} value={persona.Profile.Nickname} onChange={e => updateProfile('Nickname', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Gender</label>
+                <label className={styles.label}>性別</label>
                 <select className={styles.select} value={persona.Profile.Gender} onChange={e => updateProfile('Gender', e.target.value)}>
                   {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o || '—'}</option>)}
                 </select>
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Occupation</label>
+                <label className={styles.label}>職業</label>
                 <input className={styles.input} placeholder="例：エンジニア、学生" value={persona.Profile.Occupation} onChange={e => updateProfile('Occupation', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Hobbies</label>
+                <label className={styles.label}>趣味</label>
                 <input className={styles.input} placeholder="例：ドライブ、カフェ巡り" value={persona.Profile.Hobbies} onChange={e => updateProfile('Hobbies', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>FrequentPlaces</label>
+                <label className={styles.label}>よく行く場所</label>
                 <input className={styles.input} placeholder="例：カフェ、ジム" value={persona.Profile.FrequentPlaces} onChange={e => updateProfile('FrequentPlaces', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Routine</label>
+                <label className={styles.label}>習慣・よくすること</label>
                 <input className={styles.input} placeholder="例：朝の勉強、SNSチェック" value={persona.Profile.Routine} onChange={e => updateProfile('Routine', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Services</label>
+                <label className={styles.label}>よく使うサービス</label>
                 <input className={styles.input} placeholder="例：Instagram、YouTube" value={persona.Profile.Services} onChange={e => updateProfile('Services', e.target.value)} />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Devices</label>
+                <label className={styles.label}>よく使う機器</label>
                 <input className={styles.input} placeholder="例：iPhone、Mac" value={persona.Profile.Devices} onChange={e => updateProfile('Devices', e.target.value)} />
               </div>
               <div className={`${styles.field} ${styles.fullWidth}`}>
-                <label className={styles.label}>Interests</label>
+                <label className={styles.label}>興味があること</label>
                 <input className={styles.input} placeholder="例：ホラー映画、Hiphop、アニメ" value={persona.Profile.Interests} onChange={e => updateProfile('Interests', e.target.value)} />
               </div>
             </div>
