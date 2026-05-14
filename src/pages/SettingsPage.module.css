@@ -111,6 +111,107 @@
   color: var(--ink-muted);
 }
 
+.select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: 1px solid var(--paper-warm);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.select:focus { border-color: var(--ink-soft); }
+
+.personaSubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--paper-warm);
+}
+
+.personaSubHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.personaSubTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.personCard {
+  background: var(--paper);
+  border: 1px solid var(--paper-warm);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.personCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.personCardName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.personCardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.addPersonBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-muted);
+  padding: 4px 8px;
+  border: 1px dashed var(--paper-warm);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, border-color 0.15s;
+}
+.addPersonBtn:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+.removePersonBtn {
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.removePersonBtn:hover { color: var(--accent); }
+
+.emptyList {
+  font-size: 12px;
+  color: var(--ink-muted);
+  padding: 4px 0;
+}
+
 .saveBtn {
   display: flex;
   align-items: center;

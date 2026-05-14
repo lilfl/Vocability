@@ -450,7 +450,36 @@ Avoid:
 
 const arr2str = (v, sep = ', ') => Array.isArray(v) ? v.join(sep) : (v ?? '')
 
+function formatPersonaContext(persona) {
+  if (!persona) return ''
+  if (typeof persona === 'string') return persona
+
+  const lines = []
+
+  const profileEntries = Object.entries(persona.Profile || {}).filter(([, v]) => v)
+  if (profileEntries.length) {
+    lines.push('Profile:')
+    profileEntries.forEach(([k, v]) => lines.push(`  ${k}: ${v}`))
+  }
+
+  for (const group of ['Family', 'Friends', 'PeopleAround']) {
+    const people = (persona[group] || []).filter(p => Object.values(p).some(v => v))
+    if (people.length) {
+      if (lines.length) lines.push('')
+      lines.push(`${group}:`)
+      people.forEach(person => {
+        Object.entries(person).filter(([, v]) => v).forEach(([k, v], i) => {
+          lines.push(`  ${i === 0 ? '- ' : '  '}${k}: ${v}`)
+        })
+      })
+    }
+  }
+
+  return lines.join('\n')
+}
+
 export async function generateVocabMetadata(apiKey, words, personaContext = '') {
+  const personaStr = formatPersonaContext(personaContext)
   const all = []
   for (const word of words) {
     const res = await fetch(`${BASE}/chat/completions`, {
@@ -464,7 +493,7 @@ export async function generateVocabMetadata(apiKey, words, personaContext = '') 
         temperature: 0.3,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Vocabulary: ${word}\n\nPersonaContext: ${personaContext}` },
+          { role: 'user', content: `Vocabulary: ${word}\n\nPersonaContext:\n${personaStr}` },
         ],
       }),
     })
