@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useSettings } from '../lib/SettingsContext'
+import { useAddPage } from '../lib/AddPageContext'
 import { generateVocabMetadata } from '../lib/openai'
 import { createPage, buildNotionProperties } from '../lib/notion'
 import { Upload, Plus, X, ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader } from 'lucide-react'
@@ -191,8 +192,7 @@ const BLANK_VOCAB = () => ({
 
 export default function AddPage() {
   const { settings } = useSettings()
-  const [words, setWords] = useState('')
-  const [vocabs, setVocabs] = useState([])
+  const { words, setWords, vocabs, setVocabs } = useAddPage()
   const [status, setStatus] = useState(null) // null | 'generating' | 'saving' | 'done' | 'error'
   const [error, setError] = useState('')
   const [savedCount, setSavedCount] = useState(0)
