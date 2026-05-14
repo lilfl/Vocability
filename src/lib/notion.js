@@ -115,23 +115,26 @@ export function parseVocabPage(page) {
   const p = page.properties
   return {
     id: page.id,
-    Vocabulary:      extractTitle(p['Vocabulary']),
-    Meaning:         extractRichText(p['Meaning']),
-    Example:         extractRichText(p['Example']),
-    Memo:            extractRichText(p['Memo']),
-    CoreImage:       extractRichText(p['CoreImage']),
-    Phonetic:        extractRichText(p['Phonetic']),
-    SimilarSpelling: extractRichText(p['SimilarSpelling']),
-    Paraphrase:      extractRichText(p['Paraphrase']),
-    AudioURL:        extractUrl(p['AudioURL']),
-    Difficulty:      extractSelect(p['Difficulty']),
-    POS:             extractSelect(p['POS']),
-    Usage:           extractSelect(p['Usage']),
-    CasualLevel:     extractSelect(p['CasualLevel']),
-    Frequency:       extractSelect(p['Frequency']),
-    Type:            extractMultiSelect(p['Type']),
-    EmotionTone:     extractMultiSelect(p['Emotion/Tone']),
-    // SM-2 fields (stored as numbers in Notion)
+    Vocabulary:              extractTitle(p['Vocabulary']),
+    POS:                     extractSelect(p['POS']),
+    Meaning:                 extractRichText(p['Meaning']),
+    JapaneseMeaning:         extractRichText(p['JapaneseMeaning']),
+    CoreImage:               extractRichText(p['CoreImage']),
+    Example:                 extractRichText(p['Example']),
+    Memo:                    extractRichText(p['Memo']),
+    Casualness:              extractSelect(p['Casualness']),
+    EmotionTags:             extractMultiSelect(p['EmotionTags']),
+    Usage:                   extractMultiSelect(p['Usage']),
+    NativeFrequency:         extractSelect(p['NativeFrequency']),
+    IPA_US:                  extractRichText(p['IPA_US']),
+    IPA_UK:                  extractRichText(p['IPA_UK']),
+    YouGlish:                extractUrl(p['YouGlish']),
+    Synonyms:                extractRichText(p['Synonyms']),
+    Paraphrases:             extractRichText(p['Paraphrases']),
+    RelatedExpressions:      extractRichText(p['RelatedExpressions']),
+    SimilarSpelling:         extractRichText(p['SimilarSpelling']),
+    PronunciationConfusions: extractRichText(p['PronunciationConfusions']),
+    // SM-2 fields
     sm2_interval:    extractNumber(p['sm2_interval']) ?? 1,
     sm2_repetition:  extractNumber(p['sm2_repetition']) ?? 0,
     sm2_easeFactor:  extractNumber(p['sm2_easeFactor']) ?? 2.5,
@@ -142,25 +145,30 @@ export function parseVocabPage(page) {
 // Build properties object from vocab for Notion
 export function buildNotionProperties(vocab) {
   const props = {}
-  if (vocab.Vocabulary     != null) props['Vocabulary']      = titleProp(vocab.Vocabulary)
-  if (vocab.Meaning        != null) props['Meaning']         = richTextProp(vocab.Meaning)
-  if (vocab.Example        != null) props['Example']         = richTextProp(vocab.Example)
-  if (vocab.Memo           != null) props['Memo']            = richTextProp(vocab.Memo)
-  if (vocab.CoreImage      != null) props['CoreImage']       = richTextProp(vocab.CoreImage)
-  if (vocab.Phonetic       != null) props['Phonetic']        = richTextProp(vocab.Phonetic)
-  if (vocab.SimilarSpelling!= null) props['SimilarSpelling'] = richTextProp(vocab.SimilarSpelling)
-  if (vocab.Paraphrase     != null) props['Paraphrase']      = richTextProp(vocab.Paraphrase)
-  if (vocab.AudioURL       != null) props['AudioURL']        = urlProp(vocab.AudioURL)
-  if (vocab.Difficulty     != null) props['Difficulty']      = selectProp(vocab.Difficulty)
-  if (vocab.POS            != null) props['POS']             = selectProp(vocab.POS)
-  if (vocab.Usage          != null) props['Usage']           = selectProp(vocab.Usage)
-  if (vocab.CasualLevel    != null) props['CasualLevel']     = selectProp(vocab.CasualLevel)
-  if (vocab.Frequency      != null) props['Frequency']       = selectProp(vocab.Frequency)
-  if (vocab.Type           != null) props['Type']            = multiSelectProp(vocab.Type)
-  if (vocab.EmotionTone    != null) props['Emotion/Tone']    = multiSelectProp(vocab.EmotionTone)
-  if (vocab.sm2_interval   != null) props['sm2_interval']    = numberProp(vocab.sm2_interval)
-  if (vocab.sm2_repetition != null) props['sm2_repetition']  = numberProp(vocab.sm2_repetition)
-  if (vocab.sm2_easeFactor != null) props['sm2_easeFactor']  = numberProp(vocab.sm2_easeFactor)
-  if (vocab.sm2_dueDate    != null) props['sm2_dueDate']     = dateProp(vocab.sm2_dueDate)
+  const arr2str = (v, sep = ', ') => Array.isArray(v) ? v.join(sep) : (v ?? '')
+
+  if (vocab.Vocabulary             != null) props['Vocabulary']              = titleProp(vocab.Vocabulary)
+  if (vocab.POS                    != null) props['POS']                     = selectProp(vocab.POS)
+  if (vocab.Meaning                != null) props['Meaning']                 = richTextProp(vocab.Meaning)
+  if (vocab.JapaneseMeaning        != null) props['JapaneseMeaning']         = richTextProp(vocab.JapaneseMeaning)
+  if (vocab.CoreImage              != null) props['CoreImage']               = richTextProp(vocab.CoreImage)
+  if (vocab.Example                != null) props['Example']                 = richTextProp(vocab.Example)
+  if (vocab.Memo                   != null) props['Memo']                    = richTextProp(vocab.Memo)
+  if (vocab.Casualness             != null) props['Casualness']              = selectProp(vocab.Casualness)
+  if (vocab.EmotionTags            != null) props['EmotionTags']             = multiSelectProp(vocab.EmotionTags)
+  if (vocab.Usage                  != null) props['Usage']                   = multiSelectProp(vocab.Usage)
+  if (vocab.NativeFrequency        != null) props['NativeFrequency']         = selectProp(vocab.NativeFrequency)
+  if (vocab.IPA_US                 != null) props['IPA_US']                  = richTextProp(vocab.IPA_US)
+  if (vocab.IPA_UK                 != null) props['IPA_UK']                  = richTextProp(vocab.IPA_UK)
+  if (vocab.YouGlish               != null) props['YouGlish']                = urlProp(vocab.YouGlish)
+  if (vocab.Synonyms               != null) props['Synonyms']                = richTextProp(arr2str(vocab.Synonyms))
+  if (vocab.Paraphrases            != null) props['Paraphrases']             = richTextProp(arr2str(vocab.Paraphrases, '\n'))
+  if (vocab.RelatedExpressions     != null) props['RelatedExpressions']      = richTextProp(arr2str(vocab.RelatedExpressions, '\n'))
+  if (vocab.SimilarSpelling        != null) props['SimilarSpelling']         = richTextProp(arr2str(vocab.SimilarSpelling))
+  if (vocab.PronunciationConfusions!= null) props['PronunciationConfusions'] = richTextProp(arr2str(vocab.PronunciationConfusions))
+  if (vocab.sm2_interval           != null) props['sm2_interval']            = numberProp(vocab.sm2_interval)
+  if (vocab.sm2_repetition         != null) props['sm2_repetition']          = numberProp(vocab.sm2_repetition)
+  if (vocab.sm2_easeFactor         != null) props['sm2_easeFactor']          = numberProp(vocab.sm2_easeFactor)
+  if (vocab.sm2_dueDate            != null) props['sm2_dueDate']             = dateProp(vocab.sm2_dueDate)
   return props
 }

@@ -1,54 +1,496 @@
 const BASE = '/openai-api/v1'
 
-const SYSTEM_PROMPT = `You are an expert English lexicographer. Given one or more English vocabulary words/phrases, generate structured metadata for each.
+const SYSTEM_PROMPT = `You are a professional English lexicography assistant specialized in building practical vocabulary databases for Japanese English learners.
 
-Respond ONLY with a JSON array. Each element must match this schema exactly:
-{
-  "Vocabulary": string,
-  "Meaning": string,           // Japanese meaning/explanation
-  "Example": string,           // One natural example sentence
-  "Phonetic": string,          // IPA phonetic transcription e.g. /wɜːrd/
-  "CoreImage": string,         // Core image/nuance in Japanese (1-2 sentences)
-  "Paraphrase": string,        // English paraphrase or synonyms
-  "SimilarSpelling": string,   // Comma-separated words with similar spelling (empty if none)
-  "AudioURL": string,          // Youglish URL: https://youglish.com/pronounce/WORD/english
-  "Difficulty": "Difficult" | "Challenging" | "Normal" | "Easy",
-  "POS": "ConjunctionAdverb" | "Sentence" | "Phrase" | "PhrasalVerb" | "Determiner" | "Interjection" | "Conjunction" | "Preposition" | "Adjective" | "Pronoun" | "Noun" | "Adverb" | "ModalVerb" | "Verb",
-  "Usage": "Both" | "Spoken" | "Written",
-  "CasualLevel": "Slang/VeryInformal" | "Casual" | "Neutral" | "Formal" | "VeryFormal",
-  "Frequency": "VeryCommon" | "Common" | "Occasionally" | "Rare",
-  "Type": array of zero or more of ["Business","Academic","Literary","Childlike","YouthSlang","OlderAdults","Feminine","Masculine"],
-  "EmotionTone": array of zero or more of ["Positive","Negative","Neutral","Humorous","Sarcastic","Polite","Rude","Soft","Harsh","Cute","Serious","Dramatic","Elegant","Aggressive","Warm","Cold"]
-}
+Your task is to analyze an English vocabulary item and generate structured vocabulary entries for a Notion-based vocabulary database.
 
-Return ONLY valid JSON, no markdown, no explanation.`
+The database is designed for:
+- practical English acquisition
+- natural native-like usage
+- pronunciation awareness
+- nuance awareness
+- vocabulary network learning
+- conversational fluency
 
-export async function generateVocabMetadata(apiKey, words) {
-  const wordList = words.map((w, i) => `${i + 1}. ${w}`).join('\n')
+The goal is NOT to create traditional dictionary entries.
 
-  const res = await fetch(`${BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      temperature: 0.3,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Generate metadata for these words:\n${wordList}` },
-      ],
-    }),
-  })
+The goal is to create:
+- learner-friendly
+- realistic
+- practical
+- structured
+- native-oriented
 
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`OpenAI error: ${res.status} ${err}`)
+vocabulary data.
+
+━━━━━━━━━━━━━━━━━━
+MULTI-SENSE RULE
+━━━━━━━━━━━━━━━━━━
+
+If the vocabulary has:
+- multiple meanings
+- multiple usages
+- multiple grammatical functions
+
+split them into SEPARATE entries by sense.
+
+Each entry must represent ONLY ONE meaning or usage.
+
+NEVER combine multiple meanings into one entry.
+
+This applies even when:
+- spelling is identical
+- POS is identical
+- meanings are related
+
+Correct:
+- run → "to move quickly on foot"
+- run → "to manage a business"
+
+Incorrect:
+- run → "to move quickly on foot; to manage a business"
+
+Ignore:
+- archaic meanings
+- highly obscure meanings
+- impractical meanings
+
+unless they remain commonly useful for learners.
+
+━━━━━━━━━━━━━━━━━━
+OUTPUT RULES
+━━━━━━━━━━━━━━━━━━
+
+- Output ONLY valid JSON
+- No markdown
+- No explanations
+- No additional text
+- Use UTF-8 characters normally
+- Use modern English
+- Prioritize natural native usage
+- Prefer learner usefulness over strict linguistic theory
+- Avoid textbook-style phrasing
+
+━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━
+
+[
+  {
+    "Vocabulary": "",
+    "POS": "",
+    "Meaning": "",
+    "JapaneseMeaning": "",
+    "CoreImage": "",
+    "Example": "",
+    "Casualness": "",
+    "EmotionTags": [],
+    "Usage": [],
+    "NativeFrequency": "",
+    "IPA_US": "",
+    "IPA_UK": "",
+    "YouGlish": "",
+    "Synonyms": [],
+    "Paraphrases": [],
+    "RelatedExpressions": [],
+    "SimilarSpelling": [],
+    "PronunciationConfusions": []
   }
+]
 
-  const data = await res.json()
-  const text = data.choices[0].message.content
-  const clean = text.replace(/```json|```/g, '').trim()
-  return JSON.parse(clean)
+━━━━━━━━━━━━━━━━━━
+PROPERTY RULES
+━━━━━━━━━━━━━━━━━━
+
+====================
+Vocabulary
+====================
+
+- Store the original vocabulary item
+- Preserve capitalization when meaningful
+
+Examples:
+- give up
+- By the way
+- How's it going?
+
+====================
+POS
+====================
+
+You MUST output EXACTLY ONE:
+
+Noun
+Verb
+Adjective
+Adverb
+Pronoun
+Preposition
+Conjunction
+Interjection
+Determiner
+ModalVerb
+PhrasalVerb
+Expression
+Idiom
+Sentence
+
+--------------------
+POS RULES
+--------------------
+
+Verb:
+Single-word action/state verbs.
+
+Examples:
+- run
+- think
+
+PhrasalVerb:
+Verb + particle combinations functioning as one semantic unit.
+
+Examples:
+- give up
+- look after
+
+Expression:
+Fixed conversational or structural chunks whose meanings are mostly understandable literally.
+
+Examples:
+- by the way
+- in fact
+
+Idiom:
+Figurative or opaque fixed expressions.
+
+Examples:
+- spill the beans
+- hit the sack
+
+Sentence:
+Complete memorized utterances.
+
+Examples:
+- Long time no see.
+- You got this.
+
+Adverb:
+Includes discourse/conjunctive adverbs.
+
+Examples:
+- however
+- therefore
+
+====================
+Meaning
+====================
+
+- Use simple English
+- Maximum 20 words
+- Avoid difficult vocabulary
+- Avoid dictionary-style wording
+- Explain the most common modern meaning
+
+Good:
+- "to stop trying something"
+
+Bad:
+- "to voluntarily discontinue participation in an activity"
+
+====================
+JapaneseMeaning
+====================
+
+- Use natural Japanese
+- Avoid literal translation
+- Prioritize practical meaning
+- Keep concise
+
+Good:
+- 諦める
+
+Bad:
+- 試みることを中止する
+
+====================
+CoreImage
+====================
+
+Describe the native conceptual image behind the vocabulary IN JAPANESE.
+
+IMPORTANT:
+- This is NOT a dictionary definition
+- This is NOT a grammar explanation
+- Keep abstract and intuitive
+- Keep short
+- Prioritize native conceptual feeling
+- Express an intuitive mental image rather than explicit meaning
+
+Good:
+- 上方向への動き
+- 面への接触
+- 何かから離れていく感覚
+- 境界を越える感覚
+
+Bad:
+- 上に動く時に使う
+- 接触を表す前置詞
+- 多くの意味を持つ単語
+
+CoreImage MUST be written in Japanese.
+
+====================
+Example
+====================
+
+The Example property must contain:
+1. A natural English sentence
+2. A natural Japanese translation
+
+Format:
+<English sentence>
+<Japanese translation>
+
+Use ONE newline between them.
+
+Example:
+I finally gave up trying to fix the bug myself.
+自分でバグを直そうとするのをついに諦めた。
+
+--------------------
+Example RULES
+--------------------
+
+- Must sound natural to native speakers
+- Must feel realistic
+- Must reflect modern English
+- Avoid textbook examples
+- Avoid unnatural situations
+- Prefer practical real-life usage
+- Prefer emotionally believable contexts
+- 8–20 English words preferred
+
+If PersonaContext is provided:
+- naturally adapt examples to learner profile
+- avoid forced references
+
+====================
+Casualness
+====================
+
+Choose EXACTLY ONE:
+
+VeryFormal
+Formal
+Neutral
+Casual
+VeryCasual
+Slang
+
+====================
+EmotionTags
+====================
+
+Choose 0–3 ONLY from:
+
+Positive
+Negative
+Friendly
+Polite
+Aggressive
+Emotional
+Encouraging
+Humorous
+Sarcastic
+Romantic
+Apologetic
+Excited
+Professional
+
+Do NOT over-tag.
+
+====================
+Usage
+====================
+
+Choose 1 or more from:
+
+Spoken
+Written
+Online
+Business
+Academic
+Literary
+
+====================
+NativeFrequency
+====================
+
+Choose EXACTLY ONE:
+
+VeryCommon
+Common
+Uncommon
+Rare
+
+Prioritize modern native conversational frequency.
+
+====================
+IPA_US / IPA_UK
+====================
+
+- Use IPA notation
+- Use modern standard pronunciations
+- Keep concise
+
+Examples:
+- /ɡɪv ʌp/
+- /ˈskedʒuːl/
+
+====================
+YouGlish
+====================
+
+Generate URL using:
+
+https://youglish.com/pronounce/{{VOCABULARY}}/english
+
+Replace spaces with %20.
+
+Example:
+https://youglish.com/pronounce/give%20up/english
+
+====================
+Synonyms
+====================
+
+Include:
+- close synonyms
+- nuance-near vocabulary
+- practically comparable vocabulary
+
+Do NOT limit to perfectly interchangeable words.
+
+Good:
+- slim → thin
+- quit → give up
+
+====================
+Paraphrases
+====================
+
+Include:
+- natural alternative ways to express the same idea
+- practical rewordings
+- conversational alternatives
+
+Good:
+- I'm exhausted.
+- I'm really tired.
+
+====================
+RelatedExpressions
+====================
+
+Include:
+- contextually related expressions
+- socially/functionally similar expressions
+- commonly associated expressions
+
+Examples:
+- How's it going?
+- What's up?
+- Take care.
+
+====================
+SimilarSpelling
+====================
+
+IMPORTANT:
+Do NOT include words merely because they look similar.
+
+Include ONLY:
+- words learners commonly confuse
+- spelling-confusion vocabulary
+
+Good:
+- affect ↔ effect
+- loose ↔ lose
+
+====================
+PronunciationConfusions
+====================
+
+Include ONLY:
+- words learners commonly confuse by pronunciation
+- homophones
+- near-homophones
+
+Good:
+- write ↔ right
+- there ↔ their
+
+━━━━━━━━━━━━━━━━━━
+FINAL PRIORITIES
+━━━━━━━━━━━━━━━━━━
+
+Prioritize:
+1. practical learner usefulness
+2. natural native usage
+3. realistic English
+4. consistency
+5. educational clarity
+
+Avoid:
+- archaic English
+- excessive dictionary wording
+- over-academic explanations
+- unnatural examples
+- overcomplicated definitions`
+
+const arr2str = (v, sep = ', ') => Array.isArray(v) ? v.join(sep) : (v ?? '')
+
+export async function generateVocabMetadata(apiKey, words, personaContext = '') {
+  const all = []
+  for (const word of words) {
+    const res = await fetch(`${BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        temperature: 0.3,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: `Vocabulary: ${word}\n\nPersonaContext: ${personaContext}` },
+        ],
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`OpenAI error: ${res.status} ${err}`)
+    }
+
+    const data = await res.json()
+    const text = data.choices[0].message.content
+    const clean = text.replace(/```json|```/g, '').trim()
+    const entries = JSON.parse(clean)
+
+    for (const entry of entries) {
+      all.push({
+        ...entry,
+        EmotionTags: entry.EmotionTags || [],
+        Usage: entry.Usage || [],
+        Synonyms:                arr2str(entry.Synonyms),
+        Paraphrases:             arr2str(entry.Paraphrases, '\n'),
+        RelatedExpressions:      arr2str(entry.RelatedExpressions, '\n'),
+        SimilarSpelling:         arr2str(entry.SimilarSpelling),
+        PronunciationConfusions: arr2str(entry.PronunciationConfusions),
+      })
+    }
+  }
+  return all
 }

@@ -9,6 +9,7 @@ export default function SettingsPage() {
     notionToken: settings.notionToken || '',
     notionDbId: settings.notionDbId || '',
     openaiKey: settings.openaiKey || '',
+    personaContext: settings.personaContext || '',
   })
   const [show, setShow] = useState({ notionToken: false, openaiKey: false })
   const [saved, setSaved] = useState(false)
@@ -73,6 +74,21 @@ export default function SettingsPage() {
                 {show.openaiKey ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Persona Context</h2>
+          <div className={styles.field}>
+            <label className={styles.label}>Learner Profile</label>
+            <textarea
+              className={styles.textarea}
+              rows={4}
+              placeholder="e.g. Japanese software engineer, mid-level English proficiency, preparing for business meetings in the US."
+              value={form.personaContext}
+              onChange={e => setForm(f => ({ ...f, personaContext: e.target.value }))}
+            />
+            <p className={styles.hint}>Passed to AI when generating vocabulary metadata. Helps tailor examples to your background.</p>
           </div>
         </section>
 

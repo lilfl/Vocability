@@ -74,6 +74,23 @@
 .input:focus {
   border-color: var(--ink-soft);
 }
+
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: 1px solid var(--paper-warm);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.textarea:focus {
+  border-color: var(--ink-soft);
+}
 .inputWrap .input {
   padding-right: 40px;
 }

@@ -56,7 +56,7 @@ export default function QuizPage() {
         cursor = data.has_more ? data.next_cursor : undefined
       } while (cursor)
 
-      const due = results.filter(isDue)
+      const due = results.filter(c => isDue(c) && c.Vocabulary)
       // Sort: new cards first (repetition=0), then by dueDate
       due.sort((a, b) => {
         if (a.sm2_repetition === 0 && b.sm2_repetition !== 0) return -1
@@ -170,9 +170,9 @@ export default function QuizPage() {
       <div className={styles.container}>
         <div className={styles.meta}>
           <div className={styles.metaLeft}>
-            {current.Difficulty && <span className={`tag tag--difficulty-${current.Difficulty}`}>{current.Difficulty}</span>}
+            {current.NativeFrequency && <span className={`tag tag--freq-${current.NativeFrequency}`}>{current.NativeFrequency}</span>}
             {current.POS && <span className="tag tag--pos">{current.POS}</span>}
-            {current.Frequency && <span className={`tag tag--freq-${current.Frequency}`}>{current.Frequency}</span>}
+            {current.Casualness && <span className="tag tag--casual">{current.Casualness}</span>}
           </div>
           <span className={styles.counter}>{currentIdx + 1} / {totalDue}</span>
         </div>
@@ -184,7 +184,7 @@ export default function QuizPage() {
             <div className={styles.cardFront}>
               <p className={styles.tapHint}>tap to reveal</p>
               <h2 className={styles.word}>{current.Vocabulary}</h2>
-              {current.Phonetic && <p className={styles.phonetic}>{current.Phonetic}</p>}
+              {current.IPA_US && <p className={styles.phonetic}>{current.IPA_US}</p>}
               {current.CoreImage && (
                 <p className={styles.coreImage}>"{current.CoreImage}"</p>
               )}
@@ -193,9 +193,9 @@ export default function QuizPage() {
             {/* Back */}
             <div className={styles.cardBack}>
               <h2 className={styles.wordBack}>{current.Vocabulary}</h2>
-              {current.Phonetic && <p className={styles.phonetic}>{current.Phonetic}</p>}
+              {current.IPA_US && <p className={styles.phonetic}>{current.IPA_US}{current.IPA_UK ? ` · ${current.IPA_UK}` : ''}</p>}
 
-              <div className={styles.meaning}>{current.Meaning}</div>
+              <div className={styles.meaning}>{current.JapaneseMeaning || current.Meaning}</div>
 
               {current.Example && (
                 <div className={styles.example}>
@@ -204,10 +204,10 @@ export default function QuizPage() {
                 </div>
               )}
 
-              {current.Paraphrase && (
+              {current.Paraphrases && (
                 <div className={styles.paraphrase}>
                   <span className={styles.exampleLabel}>Paraphrase</span>
-                  <p>{current.Paraphrase}</p>
+                  <p>{current.Paraphrases}</p>
                 </div>
               )}
 
@@ -216,15 +216,13 @@ export default function QuizPage() {
               )}
 
               <div className={styles.tagRow}>
-                {current.Usage && <span className="tag tag--usage">{current.Usage}</span>}
-                {current.CasualLevel && <span className="tag tag--casual">{current.CasualLevel}</span>}
-                {(current.Type || []).map(t => <span key={t} className="tag tag--type">{t}</span>)}
-                {(current.EmotionTone || []).map(t => <span key={t} className="tag tag--emotion">{t}</span>)}
+                {(current.Usage || []).map(t => <span key={t} className="tag tag--usage">{t}</span>)}
+                {(current.EmotionTags || []).map(t => <span key={t} className="tag tag--emotion">{t}</span>)}
               </div>
 
               <div className={styles.links}>
-                {current.AudioURL && (
-                  <a href={current.AudioURL} target="_blank" rel="noopener noreferrer" className={styles.audioLink}
+                {current.YouGlish && (
+                  <a href={current.YouGlish} target="_blank" rel="noopener noreferrer" className={styles.audioLink}
                     onClick={e => e.stopPropagation()}>
                     <Volume2 size={14} /> Listen on Youglish
                   </a>
