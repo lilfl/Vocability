@@ -30,26 +30,29 @@ npm run dev
 
 ### B. データベースの準備
 
-Notion DBに以下のプロパティを追加してください（型に注意）:
+Notion DB に以下のプロパティを追加してください（型に注意）:
 
 | プロパティ名 | 型 |
 |---|---|
 | Vocabulary | Title |
+| POS | Select |
 | Meaning | Rich Text |
+| JapaneseMeaning | Rich Text |
+| CoreImage | Rich Text |
 | Example | Rich Text |
 | Memo | Rich Text |
-| CoreImage | Rich Text |
-| Phonetic | Rich Text |
+| Casualness | Select |
+| EmotionTags | Multi-select |
+| Usage | Multi-select |
+| NativeFrequency | Select |
+| IPA_US | Rich Text |
+| IPA_UK | Rich Text |
+| YouGlish | URL |
+| Synonyms | Rich Text |
+| Paraphrases | Rich Text |
+| RelatedExpressions | Rich Text |
 | SimilarSpelling | Rich Text |
-| Paraphrase | Rich Text |
-| AudioURL | URL |
-| Difficulty | Select |
-| POS | Select |
-| Usage | Select |
-| CasualLevel | Select |
-| Frequency | Select |
-| Type | Multi-select |
-| Emotion/Tone | Multi-select |
+| PronunciationConfusions | Rich Text |
 | sm2_interval | Number |
 | sm2_repetition | Number |
 | sm2_easeFactor | Number |
@@ -76,7 +79,17 @@ https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx?v=...
 2. Notion Integration Token を入力
 3. Notion Database ID を入力
 4. OpenAI API Key を入力
-5. 「Save Settings」をクリック
+5. （任意）Persona Context を入力 → AIの例文生成をあなたのプロフィールに合わせる
+6. 「Save Settings」をクリック
+
+### Persona Context について
+
+自分の英語学習背景や目的を自由に記述します。設定すると、AIが生成する例文や語感の説明がそのプロフィールに合ったものになります。
+
+例:
+```
+Japanese software engineer, mid-level English proficiency, preparing for business meetings in the US.
+```
 
 ---
 
@@ -87,23 +100,50 @@ https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx?v=...
 1. 単語をテキストエリアに入力（1行1単語、またはカンマ区切り）
 2. または `.txt` ファイルをアップロード
 3. 「Generate with AI」をクリック → GPT-4oが全プロパティを自動生成
-4. 内容を確認・編集
+   - 多義語は**意味ごとに別エントリ**として分割される
+4. 内容を確認・編集（カードを展開すると全フィールドを編集可能）
 5. 「Save all to Notion」でNotionDBに保存
 
 ### Quiz
 
+- タイトル（Vocabulary）が空のカードは出題されない
 - 当日分（sm2_dueDate <= 今日）のカードを自動ロード
 - カードをタップで答えを表示
 - 0〜5の6段階で評価 → SM-2アルゴリズムで次回出題日を自動計算
-- 不正解（0-2）は当日セッション内で再出題
+- 不正解（0〜2）は当日セッション内で再出題
 
-## SM-2 評価基準
+### SM-2 評価基準
 
-| スコア | 意味 |
+| スコア | ラベル | 意味 |
+|---|---|---|
+| 0 | Blackout | 完全に忘れた |
+| 1 | Wrong | 間違えたが答えを見て思い出した |
+| 2 | Hard | 間違えたが答えを見れば簡単だった |
+| 3 | Good | 正解、かなり難しかった |
+| 4 | Easy | 正解、少し迷った |
+| 5 | Perfect | 完璧 |
+
+---
+
+## 生成されるメタデータ一覧
+
+| フィールド | 内容 |
 |---|---|
-| 0 | 完全に忘れた |
-| 1 | 間違えたが答えを見て思い出した |
-| 2 | 間違えたが答えを見れば簡単だった |
-| 3 | 正解、かなり難しかった |
-| 4 | 正解、少し迷った |
-| 5 | 完璧 |
+| Vocabulary | 単語・フレーズ |
+| POS | 品詞（Noun / Verb / PhrasalVerb / Idiom など14種） |
+| Meaning | 英語での簡潔な意味説明（20語以内） |
+| JapaneseMeaning | 日本語の意味 |
+| CoreImage | ネイティブの概念イメージ（日本語） |
+| Example | 例文（英語 + 日本語訳） |
+| Casualness | 丁寧さ（VeryFormal / Formal / Neutral / Casual / VeryCasual / Slang） |
+| EmotionTags | 感情・トーン（Positive / Humorous / Sarcastic など、0〜3個） |
+| Usage | 使用場面（Spoken / Written / Online / Business / Academic / Literary） |
+| NativeFrequency | 使用頻度（VeryCommon / Common / Uncommon / Rare） |
+| IPA_US | 米国英語発音記号 |
+| IPA_UK | 英国英語発音記号 |
+| YouGlish | Youglish 発音ページURL |
+| Synonyms | 類義語・近似語（カンマ区切り） |
+| Paraphrases | 言い換え表現（改行区切り） |
+| RelatedExpressions | 関連表現（改行区切り） |
+| SimilarSpelling | スペルが混同されやすい単語 |
+| PronunciationConfusions | 発音が混同されやすい単語・同音異義語 |
