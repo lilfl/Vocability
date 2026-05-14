@@ -25,6 +25,8 @@
   letter-spacing: -0.01em;
 }
 
+/* ── Desktop nav ── */
+
 .nav {
   display: flex;
   align-items: center;
@@ -51,4 +53,75 @@
 .navLink.active {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* ── Hamburger button (mobile only) ── */
+
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hamburger:hover {
+  background: var(--paper-warm);
+}
+
+/* ── Mobile dropdown menu ── */
+
+.mobileMenu {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: var(--paper-cool);
+  border-bottom: 1px solid var(--paper-warm);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 12px;
+  gap: 2px;
+}
+
+.mobileLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background 0.15s, color 0.15s;
+}
+
+.mobileLink:hover {
+  background: var(--paper-warm);
+  color: var(--ink);
+}
+
+.mobileLink.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Breakpoint ── */
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
 }
