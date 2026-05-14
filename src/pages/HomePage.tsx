@@ -2,13 +2,19 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSettings } from '../lib/SettingsContext'
 import { queryDatabase, parseVocabPage } from '../lib/notion'
-import { isDue, daysUntilDue } from '../lib/sm2'
+import { isDue } from '../lib/sm2'
 import { BookOpen, PlusCircle, Settings, Loader } from 'lucide-react'
 import styles from './HomePage.module.css'
 
+interface Stats {
+  total: number
+  due: number
+  newCards: number
+}
+
 export default function HomePage() {
   const { settings } = useSettings()
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -17,21 +23,16 @@ export default function HomePage() {
     ;(async () => {
       try {
         const results = []
-        let cursor
+        let cursor: string | undefined
         do {
-          const data = await queryDatabase(settings.notionToken, settings.notionDbId, undefined, undefined, cursor)
+          const data = await queryDatabase(settings.notionToken!, settings.notionDbId!, undefined, undefined, cursor)
           results.push(...data.results.map(parseVocabPage))
-          cursor = data.has_more ? data.next_cursor : undefined
+          cursor = data.has_more ? (data.next_cursor ?? undefined) : undefined
         } while (cursor)
 
         const due = results.filter(isDue).length
         const newCards = results.filter(c => c.sm2_repetition === 0).length
-        const byDiff = {}
-        results.forEach(c => {
-          const d = c.Difficulty || 'Unknown'
-          byDiff[d] = (byDiff[d] || 0) + 1
-        })
-        setStats({ total: results.length, due, newCards, byDiff })
+        setStats({ total: results.length, due, newCards })
       } catch {}
       setLoading(false)
     })()
@@ -62,9 +63,7 @@ export default function HomePage() {
             <p className={styles.cardDesc}>Review due vocabulary cards with SM-2 spaced repetition.</p>
           </div>
           {loading && <Loader size={14} className={styles.spin} />}
-          {stats && (
-            <div className={styles.cardBadge}>{stats.due} due</div>
-          )}
+          {stats && <div className={styles.cardBadge}>{stats.due} due</div>}
         </Link>
 
         <Link to="/add" className={`${styles.card} ${styles.cardAdd}`}>

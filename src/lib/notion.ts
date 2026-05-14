@@ -1,8 +1,10 @@
-// Notion API client via Vite proxy (/notion-api → https://api.notion.com)
+import type { Vocab } from '../types'
 
 const BASE = '/notion-api/v1'
 
-function notionHeaders(token) {
+type NotionProp = Record<string, unknown> | undefined
+
+function notionHeaders(token: string): Record<string, string> {
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
@@ -10,8 +12,14 @@ function notionHeaders(token) {
   }
 }
 
-export async function queryDatabase(token, databaseId, filter, sorts, startCursor) {
-  const body = {}
+export async function queryDatabase(
+  token: string,
+  databaseId: string,
+  filter?: unknown,
+  sorts?: unknown,
+  startCursor?: string
+): Promise<{ results: Record<string, unknown>[]; has_more: boolean; next_cursor: string | null }> {
+  const body: Record<string, unknown> = {}
   if (filter) body.filter = filter
   if (sorts) body.sorts = sorts
   if (startCursor) body.start_cursor = startCursor
@@ -25,14 +33,15 @@ export async function queryDatabase(token, databaseId, filter, sorts, startCurso
   return res.json()
 }
 
-export async function createPage(token, databaseId, properties) {
+export async function createPage(
+  token: string,
+  databaseId: string,
+  properties: Record<string, unknown>
+): Promise<unknown> {
   const res = await fetch(`${BASE}/pages`, {
     method: 'POST',
     headers: notionHeaders(token),
-    body: JSON.stringify({
-      parent: { database_id: databaseId },
-      properties,
-    }),
+    body: JSON.stringify({ parent: { database_id: databaseId }, properties }),
   })
   if (!res.ok) {
     const err = await res.text()
@@ -41,7 +50,11 @@ export async function createPage(token, databaseId, properties) {
   return res.json()
 }
 
-export async function updatePage(token, pageId, properties) {
+export async function updatePage(
+  token: string,
+  pageId: string,
+  properties: Record<string, unknown>
+): Promise<unknown> {
   const res = await fetch(`${BASE}/pages/${pageId}`, {
     method: 'PATCH',
     headers: notionHeaders(token),
@@ -53,68 +66,73 @@ export async function updatePage(token, pageId, properties) {
 
 // ── Property helpers ──────────────────────────────────────────────
 
-export function extractTitle(prop) {
-  return prop?.title?.map(t => t.plain_text).join('') ?? ''
+export function extractTitle(prop: NotionProp): string {
+  const p = prop as { title?: { plain_text: string }[] } | undefined
+  return p?.title?.map(t => t.plain_text).join('') ?? ''
 }
 
-export function extractRichText(prop) {
-  return prop?.rich_text?.map(t => t.plain_text).join('') ?? ''
+export function extractRichText(prop: NotionProp): string {
+  const p = prop as { rich_text?: { plain_text: string }[] } | undefined
+  return p?.rich_text?.map(t => t.plain_text).join('') ?? ''
 }
 
-export function extractSelect(prop) {
-  return prop?.select?.name ?? null
+export function extractSelect(prop: NotionProp): string | null {
+  const p = prop as { select?: { name: string } | null } | undefined
+  return p?.select?.name ?? null
 }
 
-export function extractMultiSelect(prop) {
-  return prop?.multi_select?.map(s => s.name) ?? []
+export function extractMultiSelect(prop: NotionProp): string[] {
+  const p = prop as { multi_select?: { name: string }[] } | undefined
+  return p?.multi_select?.map(s => s.name) ?? []
 }
 
-export function extractNumber(prop) {
-  return prop?.number ?? null
+export function extractNumber(prop: NotionProp): number | null {
+  const p = prop as { number?: number | null } | undefined
+  return p?.number ?? null
 }
 
-export function extractDate(prop) {
-  return prop?.date?.start ?? null
+export function extractDate(prop: NotionProp): string | null {
+  const p = prop as { date?: { start: string } | null } | undefined
+  return p?.date?.start ?? null
 }
 
-export function extractUrl(prop) {
-  return prop?.url ?? null
+export function extractUrl(prop: NotionProp): string | null {
+  const p = prop as { url?: string | null } | undefined
+  return p?.url ?? null
 }
 
-// Build Notion property objects for create/update
-export function titleProp(value) {
+export function titleProp(value: string): unknown {
   return { title: [{ text: { content: value ?? '' } }] }
 }
 
-export function richTextProp(value) {
+export function richTextProp(value: string): unknown {
   return { rich_text: [{ text: { content: value ?? '' } }] }
 }
 
-export function selectProp(value) {
+export function selectProp(value: string | null): unknown {
   return value ? { select: { name: value } } : { select: null }
 }
 
-export function multiSelectProp(values) {
+export function multiSelectProp(values: string[]): unknown {
   return { multi_select: (values ?? []).map(v => ({ name: v })) }
 }
 
-export function numberProp(value) {
+export function numberProp(value: number | null): unknown {
   return { number: value ?? null }
 }
 
-export function dateProp(value) {
+export function dateProp(value: string | null): unknown {
   return value ? { date: { start: value } } : { date: null }
 }
 
-export function urlProp(value) {
+export function urlProp(value: string | null): unknown {
   return { url: value ?? null }
 }
 
-// Parse a full Notion page into a vocab object
-export function parseVocabPage(page) {
-  const p = page.properties
+export function parseVocabPage(page: Record<string, unknown>): Vocab {
+  const p = (page.properties ?? {}) as Record<string, NotionProp>
   return {
-    id: page.id,
+    id: page.id as string,
     Vocabulary:              extractTitle(p['Vocabulary']),
     POS:                     extractSelect(p['POS']),
     Meaning:                 extractRichText(p['Meaning']),
@@ -134,7 +152,6 @@ export function parseVocabPage(page) {
     RelatedExpressions:      extractRichText(p['RelatedExpressions']),
     SimilarSpelling:         extractRichText(p['SimilarSpelling']),
     PronunciationConfusions: extractRichText(p['PronunciationConfusions']),
-    // SM-2 fields
     sm2_interval:    extractNumber(p['sm2_interval']) ?? 1,
     sm2_repetition:  extractNumber(p['sm2_repetition']) ?? 0,
     sm2_easeFactor:  extractNumber(p['sm2_easeFactor']) ?? 2.5,
@@ -142,10 +159,10 @@ export function parseVocabPage(page) {
   }
 }
 
-// Build properties object from vocab for Notion
-export function buildNotionProperties(vocab) {
-  const props = {}
-  const arr2str = (v, sep = ', ') => Array.isArray(v) ? v.join(sep) : (v ?? '')
+export function buildNotionProperties(vocab: Partial<Vocab>): Record<string, unknown> {
+  const props: Record<string, unknown> = {}
+  const arr2str = (v: string | string[] | null | undefined, sep = ', '): string =>
+    Array.isArray(v) ? v.join(sep) : (v ?? '')
 
   if (vocab.Vocabulary             != null) props['Vocabulary']              = titleProp(vocab.Vocabulary)
   if (vocab.POS                    != null) props['POS']                     = selectProp(vocab.POS)

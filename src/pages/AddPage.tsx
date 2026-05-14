@@ -3,6 +3,7 @@ import { useSettings } from '../lib/SettingsContext'
 import { useAddPage } from '../lib/AddPageContext'
 import { generateVocabMetadata } from '../lib/openai'
 import { createPage, buildNotionProperties } from '../lib/notion'
+import type { Vocab } from '../types'
 import { Upload, Plus, X, ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 import styles from './AddPage.module.css'
 
@@ -12,15 +13,22 @@ const FREQ_OPTIONS = ['VeryCommon','Common','Uncommon','Rare']
 const USAGE_OPTIONS = ['Spoken','Written','Online','Business','Academic','Literary']
 const EMOTION_OPTIONS = ['Positive','Negative','Friendly','Polite','Aggressive','Emotional','Encouraging','Humorous','Sarcastic','Romantic','Apologetic','Excited','Professional']
 
-function VocabCard({ vocab, index, onChange, onRemove }) {
+interface VocabCardProps {
+  vocab: Vocab
+  index: number
+  onChange: (index: number, updated: Vocab) => void
+  onRemove: (index: number) => void
+}
+
+function VocabCard({ vocab, index, onChange, onRemove }: VocabCardProps) {
   const [expanded, setExpanded] = useState(false)
 
-  const handleField = (field, value) => {
+  const handleField = <K extends keyof Vocab>(field: K, value: Vocab[K]) => {
     onChange(index, { ...vocab, [field]: value })
   }
 
-  const toggleMulti = (field, value) => {
-    const arr = vocab[field] || []
+  const toggleMulti = (field: 'EmotionTags' | 'Usage', value: string) => {
+    const arr = vocab[field] ?? []
     const next = arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]
     handleField(field, next)
   }
@@ -47,11 +55,11 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
         <div className={styles.row2}>
           <div className={styles.field}>
             <label className={styles.label}>Vocabulary *</label>
-            <input className={styles.input} value={vocab.Vocabulary || ''} onChange={e => handleField('Vocabulary', e.target.value)} />
+            <input className={styles.input} value={vocab.Vocabulary} onChange={e => handleField('Vocabulary', e.target.value)} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>POS</label>
-            <select className={styles.select} value={vocab.POS || ''} onChange={e => handleField('POS', e.target.value)}>
+            <select className={styles.select} value={vocab.POS ?? ''} onChange={e => handleField('POS', e.target.value || null)}>
               <option value="">—</option>
               {POS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
@@ -61,17 +69,17 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
         <div className={styles.row2}>
           <div className={styles.field}>
             <label className={styles.label}>Meaning (English)</label>
-            <textarea className={styles.textarea} rows={2} value={vocab.Meaning || ''} onChange={e => handleField('Meaning', e.target.value)} />
+            <textarea className={styles.textarea} rows={2} value={vocab.Meaning} onChange={e => handleField('Meaning', e.target.value)} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Japanese Meaning *</label>
-            <textarea className={styles.textarea} rows={2} value={vocab.JapaneseMeaning || ''} onChange={e => handleField('JapaneseMeaning', e.target.value)} />
+            <textarea className={styles.textarea} rows={2} value={vocab.JapaneseMeaning} onChange={e => handleField('JapaneseMeaning', e.target.value)} />
           </div>
         </div>
 
         <div className={styles.field}>
           <label className={styles.label}>Example</label>
-          <textarea className={styles.textarea} rows={3} value={vocab.Example || ''} onChange={e => handleField('Example', e.target.value)} placeholder={"English sentence\n日本語訳"} />
+          <textarea className={styles.textarea} rows={3} value={vocab.Example} onChange={e => handleField('Example', e.target.value)} placeholder={"English sentence\n日本語訳"} />
         </div>
 
         {expanded && (
@@ -79,22 +87,19 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
             <div className={styles.row2}>
               <div className={styles.field}>
                 <label className={styles.label}>IPA (US)</label>
-                <input className={styles.input} value={vocab.IPA_US || ''} onChange={e => handleField('IPA_US', e.target.value)} placeholder="/wɜːrd/" />
+                <input className={styles.input} value={vocab.IPA_US} onChange={e => handleField('IPA_US', e.target.value)} placeholder="/wɜːrd/" />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>IPA (UK)</label>
-                <input className={styles.input} value={vocab.IPA_UK || ''} onChange={e => handleField('IPA_UK', e.target.value)} placeholder="/wɜːd/" />
+                <input className={styles.input} value={vocab.IPA_UK} onChange={e => handleField('IPA_UK', e.target.value)} placeholder="/wɜːd/" />
               </div>
             </div>
 
             <div className={styles.selectGrid}>
-              {[
-                ['Casualness', CASUAL_OPTIONS],
-                ['NativeFrequency', FREQ_OPTIONS],
-              ].map(([field, opts]) => (
-                <div key={field} className={styles.field}>
-                  <label className={styles.label}>{field}</label>
-                  <select className={styles.select} value={vocab[field] || ''} onChange={e => handleField(field, e.target.value)}>
+              {([['Casualness', CASUAL_OPTIONS], ['NativeFrequency', FREQ_OPTIONS]] as [keyof Vocab, string[]][]).map(([field, opts]) => (
+                <div key={String(field)} className={styles.field}>
+                  <label className={styles.label}>{String(field)}</label>
+                  <select className={styles.select} value={(vocab[field] as string) ?? ''} onChange={e => handleField(field, (e.target.value || null) as never)}>
                     <option value="">—</option>
                     {opts.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
@@ -106,12 +111,9 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
               <label className={styles.label}>Usage</label>
               <div className={styles.chips}>
                 {USAGE_OPTIONS.map(o => (
-                  <button
-                    key={o}
-                    className={`${styles.chip} ${(vocab.Usage || []).includes(o) ? styles.chipActive : ''}`}
-                    onClick={() => toggleMulti('Usage', o)}
-                    type="button"
-                  >{o}</button>
+                  <button key={o} type="button"
+                    className={`${styles.chip} ${vocab.Usage.includes(o) ? styles.chipActive : ''}`}
+                    onClick={() => toggleMulti('Usage', o)}>{o}</button>
                 ))}
               </div>
             </div>
@@ -120,57 +122,54 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
               <label className={styles.label}>Emotion Tags</label>
               <div className={styles.chips}>
                 {EMOTION_OPTIONS.map(o => (
-                  <button
-                    key={o}
-                    className={`${styles.chip} ${(vocab.EmotionTags || []).includes(o) ? styles.chipEmotionActive : ''}`}
-                    onClick={() => toggleMulti('EmotionTags', o)}
-                    type="button"
-                  >{o}</button>
+                  <button key={o} type="button"
+                    className={`${styles.chip} ${vocab.EmotionTags.includes(o) ? styles.chipEmotionActive : ''}`}
+                    onClick={() => toggleMulti('EmotionTags', o)}>{o}</button>
                 ))}
               </div>
             </div>
 
             <div className={styles.field}>
               <label className={styles.label}>Core Image</label>
-              <textarea className={styles.textarea} rows={2} value={vocab.CoreImage || ''} onChange={e => handleField('CoreImage', e.target.value)} />
+              <textarea className={styles.textarea} rows={2} value={vocab.CoreImage} onChange={e => handleField('CoreImage', e.target.value)} />
             </div>
 
             <div className={styles.row2}>
               <div className={styles.field}>
                 <label className={styles.label}>Synonyms</label>
-                <input className={styles.input} value={vocab.Synonyms || ''} onChange={e => handleField('Synonyms', e.target.value)} placeholder="quit, abandon, drop" />
+                <input className={styles.input} value={vocab.Synonyms} onChange={e => handleField('Synonyms', e.target.value)} placeholder="quit, abandon, drop" />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Similar Spelling</label>
-                <input className={styles.input} value={vocab.SimilarSpelling || ''} onChange={e => handleField('SimilarSpelling', e.target.value)} />
+                <input className={styles.input} value={vocab.SimilarSpelling} onChange={e => handleField('SimilarSpelling', e.target.value)} />
               </div>
             </div>
 
             <div className={styles.row2}>
               <div className={styles.field}>
                 <label className={styles.label}>Paraphrases</label>
-                <textarea className={styles.textarea} rows={3} value={vocab.Paraphrases || ''} onChange={e => handleField('Paraphrases', e.target.value)} placeholder={"one per line"} />
+                <textarea className={styles.textarea} rows={3} value={vocab.Paraphrases} onChange={e => handleField('Paraphrases', e.target.value)} placeholder="one per line" />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Related Expressions</label>
-                <textarea className={styles.textarea} rows={3} value={vocab.RelatedExpressions || ''} onChange={e => handleField('RelatedExpressions', e.target.value)} placeholder={"one per line"} />
+                <textarea className={styles.textarea} rows={3} value={vocab.RelatedExpressions} onChange={e => handleField('RelatedExpressions', e.target.value)} placeholder="one per line" />
               </div>
             </div>
 
             <div className={styles.row2}>
               <div className={styles.field}>
                 <label className={styles.label}>Pronunciation Confusions</label>
-                <input className={styles.input} value={vocab.PronunciationConfusions || ''} onChange={e => handleField('PronunciationConfusions', e.target.value)} />
+                <input className={styles.input} value={vocab.PronunciationConfusions} onChange={e => handleField('PronunciationConfusions', e.target.value)} />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Memo</label>
-                <input className={styles.input} value={vocab.Memo || ''} onChange={e => handleField('Memo', e.target.value)} />
+                <input className={styles.input} value={vocab.Memo} onChange={e => handleField('Memo', e.target.value)} />
               </div>
             </div>
 
             <div className={styles.field}>
               <label className={styles.label}>YouGlish URL</label>
-              <input className={styles.input} value={vocab.YouGlish || ''} onChange={e => handleField('YouGlish', e.target.value)} />
+              <input className={styles.input} value={vocab.YouGlish ?? ''} onChange={e => handleField('YouGlish', e.target.value || null)} />
             </div>
           </>
         )}
@@ -179,38 +178,40 @@ function VocabCard({ vocab, index, onChange, onRemove }) {
   )
 }
 
-const BLANK_VOCAB = () => ({
+const BLANK_VOCAB = (): Vocab => ({
+  id: '',
   Vocabulary: '', Meaning: '', JapaneseMeaning: '', Example: '',
-  POS: '', Casualness: 'Neutral', NativeFrequency: 'Common',
+  POS: null, Casualness: 'Neutral', NativeFrequency: 'Common',
   Usage: [], EmotionTags: [], CoreImage: '',
   Synonyms: '', Paraphrases: '', RelatedExpressions: '',
   SimilarSpelling: '', PronunciationConfusions: '',
-  IPA_US: '', IPA_UK: '', YouGlish: '', Memo: '',
+  IPA_US: '', IPA_UK: '', YouGlish: null, Memo: '',
   sm2_interval: 1, sm2_repetition: 0, sm2_easeFactor: 2.5,
   sm2_dueDate: new Date().toISOString().split('T')[0],
 })
 
+type Status = 'generating' | 'saving' | 'done' | 'error' | null
+
 export default function AddPage() {
   const { settings } = useSettings()
   const { words, setWords, vocabs, setVocabs } = useAddPage()
-  const [status, setStatus] = useState(null) // null | 'generating' | 'saving' | 'done' | 'error'
+  const [status, setStatus] = useState<Status>(null)
   const [error, setError] = useState('')
   const [savedCount, setSavedCount] = useState(0)
-  const fileRef = useRef()
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = (e) => {
-    const file = e.target.files[0]
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = (ev) => setWords(ev.target.result)
+    reader.onload = (ev) => setWords((ev.target?.result as string) ?? '')
     reader.readAsText(file)
   }
 
-  const parseWords = (text) => {
-    return text.split(/[\n,]+/).map(w => w.trim()).filter(Boolean)
-  }
+  const parseWords = (text: string): string[] =>
+    text.split(/[\n,]+/).map(w => w.trim()).filter(Boolean)
 
-  const hasNonEnglish = (word) => /[　-鿿豈-﫿＀-￯]/.test(word)
+  const hasNonEnglish = (word: string): boolean => /[　-鿿豈-﫿＀-￯]/.test(word)
 
   const handleGenerate = async () => {
     const wordList = parseWords(words)
@@ -232,24 +233,20 @@ export default function AddPage() {
     setStatus('generating')
     setError('')
     try {
-      const results = await generateVocabMetadata(
-        settings.openaiKey,
-        wordList,
-        settings.personaContext || ''
-      )
+      const results = await generateVocabMetadata(settings.openaiKey, wordList, settings.personaContext)
       setVocabs(results)
       setStatus(null)
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
       setStatus('error')
     }
   }
 
-  const handleVocabChange = (index, updated) => {
+  const handleVocabChange = (index: number, updated: Vocab) => {
     setVocabs(v => v.map((item, i) => i === index ? updated : item))
   }
 
-  const handleRemove = (index) => {
+  const handleRemove = (index: number) => {
     setVocabs(v => v.filter((_, i) => i !== index))
   }
 
@@ -285,7 +282,7 @@ export default function AddPage() {
       setVocabs([])
       setWords('')
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
       setStatus('error')
     }
   }
@@ -298,7 +295,6 @@ export default function AddPage() {
           <p className={styles.subtitle}>Enter words manually or upload a text file, then generate metadata with AI.</p>
         </header>
 
-        {/* Input area */}
         <div className={styles.inputSection}>
           <div className={styles.textareaWrap}>
             <textarea
@@ -310,7 +306,7 @@ export default function AddPage() {
             />
           </div>
           <div className={styles.inputActions}>
-            <button className={styles.uploadBtn} onClick={() => fileRef.current.click()}>
+            <button className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
               <Upload size={14} /> Upload .txt
             </button>
             <input ref={fileRef} type="file" accept=".txt" style={{ display: 'none' }} onChange={handleFile} />
@@ -327,7 +323,6 @@ export default function AddPage() {
           </div>
         </div>
 
-        {/* Status messages */}
         {status === 'error' && (
           <div className={styles.errorBanner}>
             <AlertCircle size={15} /> {error}
@@ -339,7 +334,6 @@ export default function AddPage() {
           </div>
         )}
 
-        {/* Vocab cards */}
         {vocabs.length > 0 && (
           <div className={styles.cards}>
             <div className={styles.cardsHeader}>
@@ -351,11 +345,7 @@ export default function AddPage() {
             {vocabs.map((v, i) => (
               <VocabCard key={i} vocab={v} index={i} onChange={handleVocabChange} onRemove={handleRemove} />
             ))}
-            <button
-              className={styles.saveBtn}
-              onClick={handleSave}
-              disabled={status === 'saving'}
-            >
+            <button className={styles.saveBtn} onClick={handleSave} disabled={status === 'saving'}>
               {status === 'saving'
                 ? <><Loader size={15} className={styles.spin} /> Saving to Notion...</>
                 : <><CheckCircle size={15} /> Save all to Notion</>

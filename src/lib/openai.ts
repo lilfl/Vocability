@@ -1,3 +1,5 @@
+import type { Vocab, Persona } from '../types'
+
 const BASE = '/openai-api/v1'
 
 const SYSTEM_PROMPT = `You are a professional English lexicography assistant specialized in building practical vocabulary databases for Japanese English learners.
@@ -448,22 +450,23 @@ Avoid:
 - unnatural examples
 - overcomplicated definitions`
 
-const arr2str = (v, sep = ', ') => Array.isArray(v) ? v.join(sep) : (v ?? '')
+const arr2str = (v: string | string[] | null | undefined, sep = ', '): string =>
+  Array.isArray(v) ? v.join(sep) : (v ?? '')
 
-function formatPersonaContext(persona) {
+function formatPersonaContext(persona: Persona | string | undefined): string {
   if (!persona) return ''
   if (typeof persona === 'string') return persona
 
-  const lines = []
+  const lines: string[] = []
 
-  const profileEntries = Object.entries(persona.Profile || {}).filter(([, v]) => v)
+  const profileEntries = Object.entries(persona.Profile).filter(([, v]) => v)
   if (profileEntries.length) {
     lines.push('Profile:')
     profileEntries.forEach(([k, v]) => lines.push(`  ${k}: ${v}`))
   }
 
-  for (const group of ['Family', 'Friends', 'PeopleAround']) {
-    const people = (persona[group] || []).filter(p => Object.values(p).some(v => v))
+  for (const group of ['Family', 'Friends', 'PeopleAround'] as const) {
+    const people = (persona[group] ?? []).filter(p => Object.values(p).some(v => v))
     if (people.length) {
       if (lines.length) lines.push('')
       lines.push(`${group}:`)
@@ -478,9 +481,14 @@ function formatPersonaContext(persona) {
   return lines.join('\n')
 }
 
-export async function generateVocabMetadata(apiKey, words, personaContext = '') {
+export async function generateVocabMetadata(
+  apiKey: string,
+  words: string[],
+  personaContext?: Persona | string
+): Promise<Vocab[]> {
   const personaStr = formatPersonaContext(personaContext)
-  const all = []
+  const all: Vocab[] = []
+
   for (const word of words) {
     const res = await fetch(`${BASE}/chat/completions`, {
       method: 'POST',
@@ -504,20 +512,36 @@ export async function generateVocabMetadata(apiKey, words, personaContext = '') 
     }
 
     const data = await res.json()
-    const text = data.choices[0].message.content
+    const text: string = data.choices[0].message.content
     const clean = text.replace(/```json|```/g, '').trim()
-    const entries = JSON.parse(clean)
+    const entries: Partial<Vocab>[] = JSON.parse(clean)
 
     for (const entry of entries) {
       all.push({
-        ...entry,
-        EmotionTags: entry.EmotionTags || [],
-        Usage: entry.Usage || [],
+        id: '',
+        Vocabulary:              entry.Vocabulary ?? '',
+        POS:                     entry.POS ?? null,
+        Meaning:                 entry.Meaning ?? '',
+        JapaneseMeaning:         entry.JapaneseMeaning ?? '',
+        CoreImage:               entry.CoreImage ?? '',
+        Example:                 entry.Example ?? '',
+        Memo:                    '',
+        Casualness:              entry.Casualness ?? null,
+        EmotionTags:             entry.EmotionTags ?? [],
+        Usage:                   entry.Usage ?? [],
+        NativeFrequency:         entry.NativeFrequency ?? null,
+        IPA_US:                  entry.IPA_US ?? '',
+        IPA_UK:                  entry.IPA_UK ?? '',
+        YouGlish:                entry.YouGlish ?? null,
         Synonyms:                arr2str(entry.Synonyms),
         Paraphrases:             arr2str(entry.Paraphrases, '\n'),
         RelatedExpressions:      arr2str(entry.RelatedExpressions, '\n'),
         SimilarSpelling:         arr2str(entry.SimilarSpelling),
         PronunciationConfusions: arr2str(entry.PronunciationConfusions),
+        sm2_interval:            1,
+        sm2_repetition:          0,
+        sm2_easeFactor:          2.5,
+        sm2_dueDate:             new Date().toISOString().split('T')[0],
       })
     }
   }

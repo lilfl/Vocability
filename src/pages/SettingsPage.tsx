@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useSettings } from '../lib/SettingsContext'
+import type { Persona, PersonaPerson } from '../types'
 import { Save, Eye, EyeOff, CheckCircle, Plus, X } from 'lucide-react'
 import styles from './SettingsPage.module.css'
 
 const MAX_PEOPLE = 2
-
 const GENDER_OPTIONS = ['', '男', '女', 'その他']
 
-const DEFAULT_PERSONA = {
+const DEFAULT_PERSONA: Persona = {
   Profile: {
     Nickname: '', Gender: '', Occupation: '', Hobbies: '',
     FrequentPlaces: '', Routine: '', Services: '', Devices: '', Interests: '',
@@ -17,32 +17,38 @@ const DEFAULT_PERSONA = {
   PeopleAround: [],
 }
 
-const BLANK_PERSON = { Nickname: '', Gender: '', Relationship: '', Occupation: '', Hobbies: '' }
+const BLANK_PERSON: PersonaPerson = { Nickname: '', Gender: '', Relationship: '', Occupation: '', Hobbies: '' }
 
-function parsePersona(raw) {
-  if (raw && typeof raw === 'object' && 'Profile' in raw) return raw
+function parsePersona(raw: unknown): Persona {
+  if (raw && typeof raw === 'object' && 'Profile' in raw) return raw as Persona
   return DEFAULT_PERSONA
 }
 
-const GROUP_LABELS = {
+const GROUP_LABELS: Record<string, string> = {
   Family: '家族',
   Friends: '友人',
   PeopleAround: '周りの人',
 }
 
-const RELATIONSHIP_HINTS = {
+const RELATIONSHIP_HINTS: Record<string, string> = {
   Family: '例：母、父、兄',
   Friends: '例：高校の友達、恋人',
   PeopleAround: '例：上司、同僚',
 }
 
-function PersonGroup({ group, people, onChange }) {
+interface PersonGroupProps {
+  group: 'Family' | 'Friends' | 'PeopleAround'
+  people: PersonaPerson[]
+  onChange: (people: PersonaPerson[]) => void
+}
+
+function PersonGroup({ group, people, onChange }: PersonGroupProps) {
   const label = GROUP_LABELS[group]
   const relHint = RELATIONSHIP_HINTS[group]
 
   const add = () => onChange([...people, { ...BLANK_PERSON }])
-  const remove = (i) => onChange(people.filter((_, idx) => idx !== i))
-  const update = (i, key, val) =>
+  const remove = (i: number) => onChange(people.filter((_, idx) => idx !== i))
+  const update = (i: number, key: keyof PersonaPerson, val: string) =>
     onChange(people.map((p, idx) => idx === i ? { ...p, [key]: val } : p))
 
   return (
@@ -56,16 +62,12 @@ function PersonGroup({ group, people, onChange }) {
         )}
       </div>
 
-      {people.length === 0 && (
-        <p className={styles.emptyList}>登録なし</p>
-      )}
+      {people.length === 0 && <p className={styles.emptyList}>登録なし</p>}
 
       {people.map((person, i) => (
         <div key={i} className={styles.personCard}>
           <div className={styles.personCardHeader}>
-            <span className={styles.personCardName}>
-              {person.Nickname || `${label} ${i + 1}`}
-            </span>
+            <span className={styles.personCardName}>{person.Nickname || `${label} ${i + 1}`}</span>
             <button className={styles.removePersonBtn} onClick={() => remove(i)} type="button">
               <X size={14} />
             </button>
@@ -103,18 +105,18 @@ function PersonGroup({ group, people, onChange }) {
 export default function SettingsPage() {
   const { settings, updateSettings } = useSettings()
   const [form, setForm] = useState({
-    notionToken: settings.notionToken || '',
-    notionDbId: settings.notionDbId || '',
-    openaiKey: settings.openaiKey || '',
+    notionToken: settings.notionToken ?? '',
+    notionDbId: settings.notionDbId ?? '',
+    openaiKey: settings.openaiKey ?? '',
   })
-  const [persona, setPersona] = useState(() => parsePersona(settings.personaContext))
+  const [persona, setPersona] = useState<Persona>(() => parsePersona(settings.personaContext))
   const [show, setShow] = useState({ notionToken: false, openaiKey: false })
   const [saved, setSaved] = useState(false)
 
-  const updateProfile = (key, val) =>
+  const updateProfile = (key: keyof Persona['Profile'], val: string) =>
     setPersona(p => ({ ...p, Profile: { ...p.Profile, [key]: val } }))
 
-  const updateGroup = (group, people) =>
+  const updateGroup = (group: 'Family' | 'Friends' | 'PeopleAround', people: PersonaPerson[]) =>
     setPersona(p => ({ ...p, [group]: people }))
 
   const handleSave = () => {
@@ -131,19 +133,13 @@ export default function SettingsPage() {
           <p className={styles.subtitle}>API keys are stored locally in your browser only.</p>
         </header>
 
-        {/* Notion */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Notion</h2>
           <div className={styles.field}>
             <label className={styles.label}>Integration Token</label>
             <div className={styles.inputWrap}>
-              <input
-                type={show.notionToken ? 'text' : 'password'}
-                className={styles.input}
-                placeholder="secret_..."
-                value={form.notionToken}
-                onChange={e => setForm(f => ({ ...f, notionToken: e.target.value }))}
-              />
+              <input type={show.notionToken ? 'text' : 'password'} className={styles.input} placeholder="secret_..."
+                value={form.notionToken} onChange={e => setForm(f => ({ ...f, notionToken: e.target.value }))} />
               <button className={styles.eye} onClick={() => setShow(s => ({ ...s, notionToken: !s.notionToken }))}>
                 {show.notionToken ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -151,30 +147,19 @@ export default function SettingsPage() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Database ID</label>
-            <input
-              type="text"
-              className={styles.input}
-              placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              value={form.notionDbId}
-              onChange={e => setForm(f => ({ ...f, notionDbId: e.target.value }))}
-            />
+            <input type="text" className={styles.input} placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              value={form.notionDbId} onChange={e => setForm(f => ({ ...f, notionDbId: e.target.value }))} />
             <p className={styles.hint}>The 32-character ID from your Notion database URL.</p>
           </div>
         </section>
 
-        {/* OpenAI */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>OpenAI</h2>
           <div className={styles.field}>
             <label className={styles.label}>API Key</label>
             <div className={styles.inputWrap}>
-              <input
-                type={show.openaiKey ? 'text' : 'password'}
-                className={styles.input}
-                placeholder="sk-..."
-                value={form.openaiKey}
-                onChange={e => setForm(f => ({ ...f, openaiKey: e.target.value }))}
-              />
+              <input type={show.openaiKey ? 'text' : 'password'} className={styles.input} placeholder="sk-..."
+                value={form.openaiKey} onChange={e => setForm(f => ({ ...f, openaiKey: e.target.value }))} />
               <button className={styles.eye} onClick={() => setShow(s => ({ ...s, openaiKey: !s.openaiKey }))}>
                 {show.openaiKey ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -182,12 +167,10 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Persona */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Persona</h2>
           <p className={styles.hint}>AIが例文を生成する際に参照するプロフィールです。入力した情報ほど自分に合った例文が生成されます。</p>
 
-          {/* Profile */}
           <div className={styles.personaSubSection}>
             <span className={styles.personaSubTitle}>本人のプロフィール</span>
             <div className={styles.profileGrid}>
@@ -232,14 +215,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Family / Friends / PeopleAround */}
-          {['Family', 'Friends', 'PeopleAround'].map(group => (
-            <PersonGroup
-              key={group}
-              group={group}
-              people={persona[group]}
-              onChange={people => updateGroup(group, people)}
-            />
+          {(['Family', 'Friends', 'PeopleAround'] as const).map(group => (
+            <PersonGroup key={group} group={group} people={persona[group]}
+              onChange={people => updateGroup(group, people)} />
           ))}
         </section>
 
