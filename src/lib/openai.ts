@@ -1,6 +1,6 @@
 import type { Vocab, Persona } from '../types'
 
-const BASE = '/api/openai/v1'
+const BASE = '/api/openai'
 
 const SYSTEM_PROMPT = `You are a professional English lexicography assistant specialized in building practical vocabulary databases for Japanese English learners.
 
@@ -490,7 +490,7 @@ export async function generateVocabMetadata(
   const all: Vocab[] = []
 
   for (const word of words) {
-    const res = await fetch(`${BASE}/chat/completions`, {
+    const res = await fetch(`${BASE}?path=v1/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,

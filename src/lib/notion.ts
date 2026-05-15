@@ -1,6 +1,6 @@
 import type { Vocab } from '../types'
 
-const BASE = '/api/notion/v1'
+const notionUrl = (path: string) => `/api/notion?path=${path}`
 
 type NotionProp = Record<string, unknown> | undefined
 
@@ -24,7 +24,7 @@ export async function queryDatabase(
   if (sorts) body.sorts = sorts
   if (startCursor) body.start_cursor = startCursor
 
-  const res = await fetch(`${BASE}/databases/${databaseId}/query`, {
+  const res = await fetch(notionUrl(`v1/databases/${databaseId}/query`), {
     method: 'POST',
     headers: notionHeaders(token),
     body: JSON.stringify(body),
@@ -38,7 +38,7 @@ export async function createPage(
   databaseId: string,
   properties: Record<string, unknown>
 ): Promise<unknown> {
-  const res = await fetch(`${BASE}/pages`, {
+  const res = await fetch(notionUrl('v1/pages'), {
     method: 'POST',
     headers: notionHeaders(token),
     body: JSON.stringify({ parent: { database_id: databaseId }, properties }),
@@ -55,7 +55,7 @@ export async function updatePage(
   pageId: string,
   properties: Record<string, unknown>
 ): Promise<unknown> {
-  const res = await fetch(`${BASE}/pages/${pageId}`, {
+  const res = await fetch(notionUrl(`v1/pages/${pageId}`), {
     method: 'PATCH',
     headers: notionHeaders(token),
     body: JSON.stringify({ properties }),
