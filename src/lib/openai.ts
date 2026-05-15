@@ -1,6 +1,6 @@
 import type { Vocab, Persona } from '../types'
 
-const BASE = '/openai-api/v1'
+const BASE = '/api/openai/v1'
 
 const SYSTEM_PROMPT = `You are a professional English lexicography assistant specialized in building practical vocabulary databases for Japanese English learners.
 

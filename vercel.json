@@ -1,7 +1,5 @@
 {
   "rewrites": [
-    { "source": "/notion-api/:path*", "destination": "/api/notion/:path*" },
-    { "source": "/openai-api/:path*", "destination": "/api/openai/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

@@ -1,6 +1,6 @@
 import type { Vocab } from '../types'
 
-const BASE = '/notion-api/v1'
+const BASE = '/api/notion/v1'
 
 type NotionProp = Record<string, unknown> | undefined
 
