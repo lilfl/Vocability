@@ -96,11 +96,6 @@ https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx?v=...
 
 自分の英語学習背景や目的を自由に記述します。設定すると、AIが生成する例文や語感の説明がそのプロフィールに合ったものになります。
 
-例:
-```
-Japanese software engineer, mid-level English proficiency, preparing for business meetings in the US.
-```
-
 ---
 
 ## 使い方
