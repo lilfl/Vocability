@@ -2,8 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/openai/:path*", "destination": "https://api.openai.com/:path*" },
-    { "source": "/api/notion/:path*", "destination": "https://api.notion.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
