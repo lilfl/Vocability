@@ -508,7 +508,6 @@ export async function generateVocabMetadata(
 
     if (!res.ok) {
       const err = await res.text()
-      console.error('[OpenAI proxy] status:', res.status, 'body:', err)
       throw new Error(`OpenAI error: ${res.status} ${err}`)
     }
 
