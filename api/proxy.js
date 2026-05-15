@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  const parts = Array.isArray(req.query.path) ? req.query.path : [req.query.path || '']
-  const [service, ...rest] = parts
+  const service = req.query.service
+  const path = req.query.path || ''
 
   let targetBase
   const extraHeaders = {}
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown service: ${service}` })
   }
 
-  const targetUrl = targetBase + '/' + rest.join('/')
+  const targetUrl = `${targetBase}/${path}`
 
   const response = await fetch(targetUrl, {
     method: req.method,
