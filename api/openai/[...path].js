@@ -14,5 +14,19 @@ export default async function handler(req, res) {
   })
 
   const text = await response.text()
+
+  if (!response.ok) {
+    return res.status(response.status).json({
+      _debug: {
+        method: req.method,
+        targetUrl,
+        status: response.status,
+        hasAuth: !!req.headers.authorization,
+        bodyType: typeof req.body,
+      },
+      _openaiResponse: text,
+    })
+  }
+
   res.status(response.status).end(text)
 }
