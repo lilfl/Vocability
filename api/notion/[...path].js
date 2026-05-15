@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const parts = Array.isArray(req.query.path) ? req.query.path : [req.query.path || '']
   const targetUrl = 'https://api.notion.com/' + parts.join('/')
 
